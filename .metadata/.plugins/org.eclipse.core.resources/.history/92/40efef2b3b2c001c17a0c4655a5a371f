@@ -1,0 +1,347 @@
+package Main;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+
+import Practice.Coordinate;
+import Practice.Stack;
+import Practice.LabelStack;
+
+import java.math.*;
+
+class Menu extends JFrame
+{
+	private Container cp;
+	private JPanel menuPanel;
+	private JPanel mainPanel;
+	
+	private int N;
+	private int size;
+	
+	private LabelStack queenLabel;
+	
+	
+	public Menu()
+	{
+		setTitle("N-Queen Problem");
+		setSize(600,400);
+		
+		cp = getContentPane();
+		menuPanel = new JPanel(null);
+		mainPanel = new JPanel(null);
+		
+		setMenu();
+	
+		setVisible(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);  //창 중간에 띄우기
+		setResizable(false);  //창 크기 변경 불가 설정
+	}
+	
+	public void DisposeMain()
+	{
+		dispose();
+	}
+	public void setMenu()
+	{ 
+		JButton startBtn = new JButton("start");
+		JButton ruleBtn = new JButton("rule");
+		JButton exitBtn = new JButton("exit");
+		JLabel title = new JLabel("<html>N-Queen<br>Problem</html>");
+		ImageIcon title_imageicon = new ImageIcon("menu_title_image.jpg");
+		JLabel title_image = new JLabel(title_imageicon);
+		
+		Font btnFont = new Font("", Font.BOLD, 20);
+		Font titleFont = new Font("", Font.BOLD, 30);
+		
+		title.setBounds(50, 30, 150, 70); title.setFont(titleFont);
+		title_image.setBounds(130,50,500,230);
+		
+		startBtn.setBounds(60, 130, 100, 30); startBtn.setFont(btnFont);
+		ruleBtn.setBounds(60, 180, 100, 30); ruleBtn.setFont(btnFont);
+		exitBtn.setBounds(60, 230, 100, 30); exitBtn.setFont(btnFont);
+		
+		startBtn.addActionListener(new menuBtnActionListener());
+		ruleBtn.addActionListener(new menuBtnActionListener());
+		exitBtn.addActionListener(new menuBtnActionListener());
+		
+		menuPanel.add(title_image);
+		menuPanel.add(title);
+		menuPanel.add(startBtn);
+		menuPanel.add(ruleBtn);
+		menuPanel.add(exitBtn);
+		
+		cp.add(menuPanel);
+	}
+	public void setMain()
+	{
+		menuPanel.setVisible(false);
+		setSize(800,600);
+		
+		size = setSize();
+		setChessBoard();
+		setStack();
+		setBtn();
+		queenLabel = new LabelStack(N, size, mainPanel);
+		
+		cp.add(mainPanel);
+		mainPanel.setVisible(true);
+		
+		Simulation simul = new Simulation();
+		simul.start();
+	}
+	public int setSize()
+	{
+		int size = 0;
+		switch(N)
+		{
+		case 4:
+			size = 100;
+			break;
+		case 5:
+			size = 80;
+			break;
+		case 6:
+			size = 67;
+			break;
+		case 7:
+			size = 57; 
+			break;
+		case 8:
+			size = 50;
+			break;
+		case 9:
+			size = 44;
+			break;
+		case 10:
+			size = 40;
+			break;
+		case 11:
+			size = 36;
+			break;
+		case 12:
+			size = 33;
+			break;
+		}
+		return size;
+	}
+	public void setChessBoard()
+	{
+		JLabel chessBoard[][] = new JLabel[N+1][N];
+		
+		Color c1 = new Color(255,204,153);
+		Color c2 = new Color(204,153,102);
+		
+		chessBoard[0] = new JLabel[N];
+		for(int i = 0; i < N; i++)
+		{ 
+			chessBoard[0][i] = new JLabel("");
+			chessBoard[0][i].setOpaque(true);
+			chessBoard[0][i].setBackground(Color.white);
+			chessBoard[0][i].setBounds(50+size*i, 40 ,size,10);
+			
+			mainPanel.add(chessBoard[0][i]);
+		}
+		
+		for(int i = 1; i < N+1; i++)
+		{
+			chessBoard[i] = new JLabel[N];
+			
+			for(int j = 0; j < N; j++)
+			{
+				chessBoard[i][j] = new JLabel("");
+				chessBoard[i][j].setOpaque(true);
+				if(i == j || Math.abs(i-j) % 2 == 0)
+				{
+					chessBoard[i][j].setBackground(c1);
+				}
+				else
+				{
+					chessBoard[i][j].setBackground(c2);
+				}
+				chessBoard[i][j].setBounds((50+j*size),(50+(i-1)*size),size,size);
+				if(i == 0 && j == 0)
+				{
+					continue;
+				}
+				mainPanel.add(chessBoard[i][j], 1.1);
+			}
+		}
+	}
+	public void setStack()
+	{
+		JLabel stack_img = new JLabel(new ImageIcon("stack_img3.png"));
+		stack_img.setBounds(600,35,152,412);
+		mainPanel.add(stack_img);
+		
+	}
+	public void setBtn()
+	{
+		JButton skipBtn = new JButton("건너뛰기"); 
+		JButton pauseBtn = new JButton("일시정지");
+		skipBtn.setBounds(290, 500, 100, 20);
+		pauseBtn.setBounds(400, 500, 100, 20);
+		skipBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}});
+		pauseBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}});
+		mainPanel.add(skipBtn);
+		mainPanel.add(pauseBtn);
+	}
+	
+	
+	class Simulation extends Thread
+	{
+		public void run()
+		{
+			Stack stack = new Stack(N);
+						
+			int x = 1, y = 1;
+			try
+			{
+				while(true)
+				{
+					for(; y <= N; y++)
+					{
+						Thread.sleep(300);
+						Coordinate temp = stack.find(x, y);
+						if(temp == null)
+						{
+							x = stack.pop().x+1;
+							y -= 2;
+							
+							if(y < 0)
+								break;
+							
+							queenLabel.pop();
+							continue;
+						}
+						else
+						{
+							stack.push(temp);
+							queenLabel.push(temp);
+							x = 1;
+						}
+					}
+					Thread.sleep(1000);
+				
+					Coordinate lastIndex = stack.pop();
+					queenLabel.pop();
+					x = lastIndex.x+1;
+					y = lastIndex.y;
+											
+					if(y < 0)
+						break;
+					stack.printSolution();
+					if(stack.seek(0).x == N && stack.seek(0).y == N)
+						break;
+				}
+			}
+			catch(InterruptedException e)
+			{
+				return;
+			}
+			
+		}
+
+		
+		
+	}
+	class menuBtnActionListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e) 
+		{
+			JButton btn = (JButton) e.getSource();
+			
+			if(btn.getText().equals("start"))
+			{
+				new Input();
+			}
+			else if(btn.getText().equals("rule"))
+			{
+				
+			}
+			else
+			{
+				dispose();
+			}
+		}
+	}
+	class Input extends JFrame
+	{
+		public Input()
+		{
+			setTitle("N 입력");
+			setSize(350,185);
+			
+			Container inputCp = getContentPane();
+			JPanel inputPanel = new JPanel(null);
+			
+			JLabel titleLabel = new JLabel("4~12 사이의 수를 입력해주세요");
+			JTextField inputTextField = new JTextField();
+			JLabel inputLabel = new JLabel("입력");
+			JButton okBtn = new JButton("확인");
+			JButton cancelBtn = new JButton("취소");
+			
+			titleLabel.setBounds(75,20,200,20);
+			inputTextField.setBounds(50,50,250,30);
+			inputLabel.setBounds(20,42,50,50);
+			okBtn.setBounds(100,100,60,30);
+			cancelBtn.setBounds(170,100,60,30);
+			
+			okBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try
+					{
+						N = Integer.parseInt(inputTextField.getText());
+						if(N < 4 || N > 12)
+						{
+							 JOptionPane.showMessageDialog(null, "잘못된 입력입니다. 프로그램을 종료합니다.", "ERROR", JOptionPane.WARNING_MESSAGE);
+							 DisposeMain();
+						}
+					}
+					catch(NumberFormatException exp)
+					{
+						 JOptionPane.showMessageDialog(null, "잘못된 입력입니다. 프로그램을 종료합니다.", "ERROR", JOptionPane.WARNING_MESSAGE);
+						 DisposeMain();
+					}
+					dispose();
+					setMain();
+				}});
+			cancelBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					dispose();
+				}});
+			
+			inputPanel.add(titleLabel);
+			inputPanel.add(inputTextField);
+			inputPanel.add(inputLabel);
+			inputPanel.add(okBtn);
+			inputPanel.add(cancelBtn);
+			
+			inputCp.add(inputPanel);
+			
+			setVisible(true);
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			setLocationRelativeTo(null);  //창 중간에 띄우기
+			setResizable(false);  //창 크기 변경 불가 설정
+		}
+	}
+}
+
+
+
+
+public class Main 
+{
+	public static void main(String[] args)
+	{
+		new Menu();
+	}
+}
